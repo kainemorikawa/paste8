@@ -1,0 +1,1260 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>和声パレット</title>
+  <style>
+    :root {
+      --bg1: #f8fafc;
+      --bg2: #dbeafe;
+      --card: rgba(255,255,255,0.92);
+      --text: #0f172a;
+      --muted: #475569;
+      --line: #cbd5e1;
+      --accent: #0f172a;
+      --accent2: #1d4ed8;
+      --pill: #e2e8f0;
+      --shadow: 0 12px 36px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height: 100vh;
+    }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 22px; }
+    .hero, .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+    .hero { padding: 28px; margin-bottom: 20px; }
+    .badges { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+    .badge {
+      background: var(--pill);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    h1 { font-size: clamp(28px, 4vw, 42px); margin: 10px 0; }
+    h2 { margin: 0 0 14px; font-size: 22px; }
+    .sub, .tiny { color: var(--muted); line-height: 1.6; }
+    .tiny { font-size: 12px; }
+    .layout { display:grid; grid-template-columns: 360px 1fr; gap:20px; }
+    .stack { display:grid; gap:20px; }
+    .card { padding: 20px; }
+    .top-compact > .card { margin-top: 0; }
+    .label { font-size: 14px; color: var(--muted); margin-bottom: 8px; display:block; }
+    input[type="text"], select {
+      width: 100%; border:1px solid var(--line); border-radius:16px; padding:12px 14px;
+      font-size:15px; background:white; color:var(--text);
+    }
+    button {
+      border: 1px solid var(--line); background: white; border-radius: 16px; padding: 10px 14px;
+      font-size: 14px; cursor: pointer; color: var(--text); transition: .18s ease;
+    }
+    button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(15,23,42,.08); }
+    button.primary { background: var(--accent); color:white; border-color: var(--accent); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; }
+    .info-list { display:grid; gap:10px; font-size:15px; }
+    .info-item strong { display:inline-block; min-width:144px; }
+    .split { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
+    .right-layout { display:grid; gap:16px; align-items:start; }
+    .top-row { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; align-items:start; }
+    .mid-row { display:grid; grid-template-columns: 1fr; gap:16px; align-items:start; }
+    .bottom-row { display:grid; grid-template-columns: 0.95fr 1.05fr; gap:16px; align-items:start; }
+    .mini-panel { display:flex; flex-direction:column; padding:16px 18px; }
+    .mini-panel h2 { margin-bottom: 10px; font-size: 20px; }
+    .clock-panel .svg-wrap { min-height: 220px; }
+    .staff-panel .svg-wrap { min-height: 220px; }
+    .clock-panel svg { width: 220px; height: 220px; }
+    .staff-panel svg { width: 100%; height: 220px; }
+    .harmony-horizontal .harmony-color-card { display:grid; grid-template-columns: 260px 1fr; gap:16px; align-items:start; }
+    .harmony-horizontal .color-swatch { height: 108px; }
+    .harmony-horizontal .color-meta-grid { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .harmony-horizontal .spectral-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .harmony-horizontal .color-bar-row { grid-template-columns: 76px 1fr 40px; }
+    .harmony-side, .harmony-main { display:grid; gap:12px; }
+    .compact-iv-hero { margin-bottom:14px; border:1px solid var(--line); border-radius:18px; padding:14px 16px; background:rgba(219,234,254,0.5); }
+    .compact-iv-hero-text { font-size: clamp(24px, 3.8vw, 44px); font-weight:800; letter-spacing:0.04em; line-height:1; }
+    .mini-metrics .metric { margin-bottom: 10px; }
+    .tri { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:20px; }
+    .svg-wrap { display:flex; justify-content:center; align-items:center; }
+    .metric { margin-bottom: 16px; }
+    .metric-head { display:flex; justify-content:space-between; font-size:14px; margin-bottom:8px; }
+    .track { height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .fill { height:100%; background: linear-gradient(90deg, #1d4ed8, #0f172a); border-radius:999px; }
+    .bars { display:grid; gap:14px; }
+    .bar-row { display:grid; grid-template-columns:44px 1fr 36px; gap:12px; align-items:center; }
+    .bar-track { background:#e2e8f0; border-radius:999px; height:24px; overflow:hidden; }
+    .bar-fill { background: linear-gradient(90deg, #60a5fa, #1e3a8a); height:100%; border-radius:999px; }
+    .table-wrap { overflow:auto; max-height:420px; border:1px solid var(--line); border-radius:18px; }
+    .stack > .card { margin-top: 0; margin-bottom: 0; }
+    .catalog-scroll { overflow:auto; max-height:220px; border:1px solid var(--line); border-radius:18px; padding:8px; }
+    .allsets-wrap { overflow:auto; max-height:520px; border:1px solid var(--line); border-radius:18px; }
+    .allsets-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .allsets-table th, .allsets-table td { padding:8px 10px; border-bottom:1px solid #e2e8f0; text-align:left; white-space:nowrap; }
+    .allsets-table thead th { position:sticky; top:0; background:#eff6ff; z-index:1; }
+    .harmonic-wrap { overflow:auto; max-height:520px; border:1px solid var(--line); border-radius:18px; }
+    .harmonic-table { width:100%; border-collapse:collapse; font-size:12px; }
+    .harmonic-table th, .harmonic-table td { padding:8px 10px; border-bottom:1px solid #e2e8f0; text-align:left; white-space:nowrap; }
+    .harmonic-table thead th { position:sticky; top:0; background:#eff6ff; z-index:1; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { padding:10px 12px; border-bottom:1px solid #e2e8f0; text-align:left; white-space:nowrap; }
+    thead th { position:sticky; top:0; background:#eff6ff; z-index:1; }
+    tr.active-row { background:#dbeafe; }
+    .zlist, .atlas-grid, .keyboard { display:grid; gap:10px; }
+    .zitem, .atlas-cell {
+      border:1px solid var(--line); border-radius:18px; padding:12px; background: rgba(255,255,255,0.82);
+    }
+    .atlas-grid { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
+    .char-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+    .char-pill { border:1px solid var(--line); border-radius:16px; padding:10px 12px; background: rgba(255,255,255,0.82); }
+    .char-pill.active { background:#dbeafe; border-color:#93c5fd; }
+    .char-name { font-size:14px; font-weight:700; }
+    .char-score { font-size:12px; color:var(--muted); margin-top:4px; }
+    .brightness-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+    .brightness-pill { border:1px solid var(--line); border-radius:16px; padding:10px 12px; background: rgba(255,255,255,0.82); }
+    .brightness-head { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:14px; font-weight:700; }
+    .brightness-meta { font-size:12px; color:var(--muted); margin-top:6px; }
+    .brightness-track { margin-top:8px; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .brightness-fill { height:100%; background: linear-gradient(90deg, #0f172a, #60a5fa); border-radius:999px; }
+    .harmony-color-card { display:grid; gap:14px; }
+    .color-swatch { height:120px; border-radius:20px; border:1px solid var(--line); box-shadow: inset 0 1px 0 rgba(255,255,255,0.55); }
+    .color-meta-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:10px; }
+    .color-meta-item { border:1px solid var(--line); border-radius:16px; padding:10px 12px; background: rgba(255,255,255,0.82); }
+    .color-meta-name { font-size:13px; font-weight:700; }
+    .color-meta-value { font-size:12px; color:var(--muted); margin-top:4px; }
+    .color-bars { display:grid; gap:10px; }
+    .color-bar-row { display:grid; grid-template-columns: 64px 1fr 42px; gap:10px; align-items:center; }
+    .color-bar-track { height:12px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .color-bar-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, #0f172a, #60a5fa); }
+    .rotation-list { display:grid; gap:8px; }
+    .rotation-item { border:1px solid var(--line); border-radius:14px; padding:10px 12px; background: rgba(255,255,255,0.82); }
+    .rotation-item.active { background:#dbeafe; border-color:#93c5fd; }
+    .rotation-head { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:13px; font-weight:700; }
+    .rotation-body { margin-top:6px; font-size:13px; color:var(--muted); }
+    .rotation-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--text); }
+    .distance-controls { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
+    .distance-list { display:grid; gap:10px; }
+    .distance-item { border:1px solid var(--line); border-radius:16px; padding:10px 12px; background:rgba(255,255,255,0.82); }
+    .distance-meta { font-size:12px; color:var(--muted); margin-top:6px; }
+    .trajectory-steps { display:grid; gap:8px; }
+    .trajectory-step { border:1px solid var(--line); border-radius:14px; padding:10px 12px; background:rgba(255,255,255,0.82); }
+    .trajectory-meta { font-size:12px; color:var(--muted); margin-top:4px; }
+    .spectral-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px; }
+    .spectral-item { border:1px solid var(--line); border-radius:16px; padding:10px 12px; background:rgba(255,255,255,0.82); }
+    .spectral-name { font-size:13px; font-weight:700; }
+    .spectral-meta { font-size:12px; color:var(--muted); margin-top:6px; }
+    .spectral-track { margin-top:8px; height:10px; background:#e2e8f0; border-radius:999px; overflow:hidden; }
+    .spectral-fill { height:100%; background: linear-gradient(90deg, #0f172a, #60a5fa); border-radius:999px; }
+    .keyboard {
+      grid-template-columns: repeat(12, minmax(0,1fr));
+    }
+    .key {
+      padding:14px 6px; text-align:center; border-radius:16px; border:1px solid var(--line);
+      background:white; cursor:pointer; font-weight:600; user-select:none;
+    }
+    .key.active { background:#0f172a; color:white; }
+    .panel-title { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+      .split, .tri, .top-row, .bottom-row, .harmony-horizontal .harmony-color-card { grid-template-columns:1fr; }
+      .harmony-horizontal .color-meta-grid, .harmony-horizontal .spectral-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="badges">
+        <span class="badge">和声パレット</span>
+        <span class="badge">Pitch-class / Prime Form / IV</span>
+        <span class="badge">Clock + Staff + Set Class DB</span>
+        <span class="badge">Single HTML</span>
+        <span class="badge">IV + Harmonic Color Engine</span>
+      </div>
+      <h1>和声パレット</h1>
+      <div class="sub">
+        和音や pitch-class 集合を入力すると、<strong>normal order / prime form / interval vector</strong> を基礎に、Pitch-class clock、C4基準の譜面、集合情報、明るさ / 暗さ、<strong>IV + 倍音込み和声カラー</strong> を同じ画面で確認できます。
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="stack">
+        <div class="card">
+          <h2>入力</h2>
+          <label class="label" for="pcInput">Pitch classes</label>
+          <input id="pcInput" type="text" value="0 1 4 7" placeholder="例: 0 1 4 7 / 0,2,4,6 / T E 0 4" />
+          <div class="row" style="margin-top:12px;">
+            <button data-preset="0 4 7">Major</button>
+            <button data-preset="0 3 7">Minor</button>
+            <button data-preset="0 3 6 9">Dim7</button>
+            <button data-preset="0 2 4 6">WT tet.</button>
+            <button data-preset="0 1 2 3">Cluster</button>
+            <button data-preset="0 2 4 6 8 10">Whole-tone</button>
+          </div>
+          <div class="row" style="margin-top:12px;">
+            <button class="primary" id="analyzeBtn">解析</button>
+            <button id="playChordBtn">和音</button>
+            <button id="playArpeggioBtn">アルペジオ</button>
+            <button id="stopAudioBtn">停止</button>
+            <button id="clearBtn">クリア</button>
+            <button id="resetBtn">初期値</button>
+          </div>
+          <div class="tiny" style="margin-top:10px;">C4基準で再生します。和音の interval vector を中心に確認するためのベース画面です。MIDI入力に対応しているブラウザでは外部MIDIキーボードからも入力できます。</div>
+        </div>
+
+        <div class="card">
+          <div class="panel-title"><h2>MIDI / 鍵盤入力</h2><span class="tiny" id="midiStatus">MIDI: 未接続</span></div>
+          <div class="keyboard" id="pcKeyboard"></div>
+          <div class="tiny" style="margin-top:10px;">12鍵をクリックすると集合へ追加・削除します。外部MIDI入力があれば note on を pitch class に変換して反映します。</div>
+        </div>
+
+        <div class="card">
+          <h2>集合情報</h2>
+          <div class="info-list" id="infoList"></div>
+        </div>
+
+        <div class="card">
+          <h2>Normal order 前の全回転</h2>
+          <div class="tiny" style="margin-bottom:12px;">入力集合を循環回転した全パターンを表示します。青い項目が normal order に選ばれた回転です。</div>
+          <div id="rotationList" class="rotation-list"></div>
+        </div>
+
+        <div class="card">
+          <h2>Interval vector キャラクター分析</h2>
+          <div id="characterSummary" class="tiny" style="margin-bottom:12px;"></div>
+          <div id="characterGrid" class="char-grid"></div>
+        </div>
+
+        <div class="card">
+          <h2>Pitch class 明るさ / 暗さ</h2>
+          <div id="brightnessSummary" class="tiny" style="margin-bottom:12px;"></div>
+          <div id="brightnessGrid" class="brightness-grid"></div>
+        </div>
+
+        <div class="card">
+          <h2>検索</h2>
+          <label class="label" for="forteSearch">Forte / prime form 検索</label>
+          <input id="forteSearch" type="text" placeholder="例: 4-21 / (0,2,4,6) / whole" />
+          <div class="tiny" style="margin-top:8px;">224 set class から絞り込みます。現在選択中の集合は表でハイライトされます。</div>
+        </div>
+      </div>
+
+      <div class="stack right-layout">
+        <div class="top-row">
+          <div class="card mini-panel clock-panel">
+            <h2>Pitch-class clock</h2>
+            <div class="svg-wrap"><svg id="clockSvg" viewBox="0 0 300 300" width="220" height="220"></svg></div>
+          </div>
+          <div class="card mini-panel staff-panel">
+            <h2>C4基準の譜面</h2>
+            <div class="svg-wrap"><svg id="staffSvg" viewBox="0 0 760 220" width="100%" height="220"></svg></div>
+          </div>
+        </div>
+
+        <div class="mid-row">
+          <div class="card harmony-horizontal">
+            <h2>和声カラー・エンジン</h2>
+            <div class="harmony-color-card">
+              <div class="harmony-side">
+                <div id="harmonyColorSwatch" class="color-swatch"></div>
+                <div id="harmonyColorSummary" class="tiny">IVから色彩を算出します。</div>
+                <div id="harmonyColorBars" class="color-bars"></div>
+              </div>
+              <div class="harmony-main">
+                <div id="harmonyColorMeta" class="color-meta-grid"></div>
+                <div>
+                  <div class="tiny" style="margin-bottom:8px;">倍音プロファイル</div>
+                  <div id="harmonicProfileGrid" class="spectral-grid"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bottom-row">
+          <div class="card">
+            <h2>Interval vector</h2>
+            <div id="ivHero" class="compact-iv-hero">
+              <div class="tiny" style="margin-bottom:6px;">Main interval vector</div>
+              <div id="ivHeroText" class="compact-iv-hero-text">&lt;000000&gt;</div>
+            </div>
+            <div id="ivBadges" class="row" style="margin-bottom:16px;"></div>
+            <div id="bars" class="bars"></div>
+          </div>
+
+          <div class="card mini-metrics">
+            <h2>簡易キャラクター軸</h2>
+            <div id="metrics"></div>
+            <div class="tiny">interval vector の分布から、roughness / openness / symmetry を近似します。</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>224 Forte set class DB</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Forte</th><th>Prime form</th><th>Card.</th><th>IV</th><th>Z</th></tr>
+              </thead>
+              <tbody id="dbTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:20px;">
+      <h2>1〜11音の全4094集合</h2>
+      <div class="tiny" style="margin-bottom:12px;">順番は raw → Interval Vector (IV) → normalized → prime form。全4094集合をスクロールで確認できます。</div>
+      <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+        <button onclick="resetAllSetsSort()">reset</button>
+      </div>
+      <div class="allsets-wrap">
+        <table class="allsets-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>raw</th>
+              <th>
+                <div>Interval Vector (IV)</div>
+                <div class="row" style="margin-top:6px; gap:6px;">
+                  <button type="button" onclick="setSort('iv','asc')">↑</button>
+                  <button type="button" onclick="setSort('iv','desc')">↓</button>
+                </div>
+              </th>
+              <th>
+                <div>normalized</div>
+                <div class="row" style="margin-top:6px; gap:6px;">
+                  <button type="button" onclick="setSort('normalized','asc')">↑</button>
+                  <button type="button" onclick="setSort('normalized','desc')">↓</button>
+                </div>
+              </th>
+              <th>
+                <div>prime form</div>
+                <div class="row" style="margin-top:6px; gap:6px;">
+                  <button type="button" onclick="setSort('primeForm','asc')">↑</button>
+                  <button type="button" onclick="setSort('primeForm','desc')">↓</button>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody id="allSetsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:20px;">
+      <h2>C1 (32.70 Hz) の100倍音テーブル</h2>
+      <div class="tiny" style="margin-bottom:12px;">基音 C1 (32.70 Hz) から 100 倍音までを表示します。frequency、基音からの総 cents、1オクターブ内へ還元した cents、最寄りの12平均律音、12平均律からのズレを確認できます。</div>
+      <div class="harmonic-wrap">
+        <table class="harmonic-table">
+          <thead>
+            <tr><th>#</th><th>frequency (Hz)</th><th>total cents</th><th>folded cents</th><th>nearest 12-TET</th><th>deviation</th></tr>
+          </thead>
+          <tbody id="harmonicTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const mod = (n, m) => ((n % m) + m) % m;
+    const NOTE_NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+    let audioCtx = null;
+    let activeOscillators = [];
+    let audioStopTimer = null;
+    let midiAccess = null;
+    let currentDB = [];
+    let all4094Rows = [];
+    let currentSort = { key: null, dir: null };
+    const BASE_HARMONIC_FREQ = 32.70;
+
+    function uniqueSorted(arr) {
+      return [...new Set(arr.map((n) => mod(Number(n), 12)))].sort((a, b) => a - b);
+    }
+
+    function parsePitchClasses(text) {
+      if (!text.trim()) return [];
+      return uniqueSorted(text.split(/[ ,，、]+/).map((s) => s.trim()).filter(Boolean).map((s) => {
+        const upper = s.toUpperCase();
+        if (upper === 'T') return 10;
+        if (upper === 'E') return 11;
+        const n = Number(upper);
+        return Number.isFinite(n) ? n : NaN;
+      }).filter((n) => Number.isFinite(n)));
+    }
+
+    function rotate(arr, i) { return arr.slice(i).concat(arr.slice(0, i)); }
+    function normalizeRotation(rot) { const base = rot[0]; return rot.map((x) => mod(x - base, 12)); }
+    function comparePacked(a, b) {
+      const spanA = a[a.length - 1], spanB = b[b.length - 1];
+      if (spanA !== spanB) return spanA - spanB;
+      for (let i = a.length - 2; i >= 0; i--) if (a[i] !== b[i]) return a[i] - b[i];
+      return 0;
+    }
+    function normalOrder(set) {
+      if (set.length <= 1) return [...set];
+      const rots = set.map((_, i) => normalizeRotation(rotate(set, i)));
+      rots.sort(comparePacked);
+      return rots[0];
+    }
+
+    function allRotationsBeforeNormalOrder(set) {
+      if (!set.length) return [];
+      return set.map((_, i) => {
+        const raw = rotate(set, i);
+        const normalized = normalizeRotation(raw);
+        return {
+          index: i + 1,
+          raw,
+          normalized,
+          span: normalized[normalized.length - 1] ?? 0
+        };
+      });
+    }
+    function invertSet(set) { return uniqueSorted(set.map((x) => mod(-x, 12))); }
+    function transposeToZero(arr) { if (!arr.length) return []; const f = arr[0]; return arr.map((x) => mod(x - f, 12)); }
+    function lexicographicCompare(a, b) {
+      const len = Math.max(a.length, b.length);
+      for (let i = 0; i < len; i++) {
+        const av = a[i] ?? Infinity, bv = b[i] ?? Infinity;
+        if (av !== bv) return av - bv;
+      }
+      return 0;
+    }
+    function primeForm(set) {
+      if (!set.length) return [];
+      const no = transposeToZero(normalOrder(set));
+      const inv = transposeToZero(normalOrder(invertSet(set)));
+      return lexicographicCompare(no, inv) <= 0 ? no : inv;
+    }
+    function intervalVector(set) {
+      const vec = [0, 0, 0, 0, 0, 0];
+      for (let i = 0; i < set.length; i++) {
+        for (let j = i + 1; j < set.length; j++) {
+          const d = mod(set[j] - set[i], 12);
+          const ic = Math.min(d, 12 - d);
+          if (ic >= 1 && ic <= 6) vec[ic - 1] += 1;
+        }
+      }
+      return vec;
+    }
+    function complement(set) {
+      const s = new Set(set);
+      return Array.from({ length: 12 }, (_, i) => i).filter((n) => !s.has(n));
+    }
+    function formatSet(arr) { return '{' + arr.join(', ') + '}'; }
+    function formatPrime(arr) { return '(' + arr.join(',') + ')'; }
+    function pfKey(arr) { return JSON.stringify(arr); }
+    function ivKey(arr) { return JSON.stringify(arr); }
+    function subsetsOfSize(arr, k) {
+      const result = [], path = [];
+      function walk(start) {
+        if (path.length === k) { result.push([...path]); return; }
+        for (let i = start; i < arr.length; i++) { path.push(arr[i]); walk(i + 1); path.pop(); }
+      }
+      walk(0); return result;
+    }
+
+    function buildForteDatabase() {
+      const db = [];
+      for (let n = 1; n <= 11; n++) {
+        const all = subsetsOfSize(Array.from({ length: 12 }, (_, i) => i), n);
+        const primeMap = new Map();
+        all.forEach((set) => {
+          const pf = primeForm(set);
+          const key = pfKey(pf);
+          if (!primeMap.has(key)) primeMap.set(key, { primeForm: pf, iv: intervalVector(set), card: n, examples: [set] });
+        });
+        const rows = [...primeMap.values()].sort((a, b) => lexicographicCompare(a.primeForm, b.primeForm));
+        rows.forEach((row, idx) => {
+          row.forte = `${n}-${idx + 1}`;
+          row.zMates = [];
+          row.chr = row.iv[0] + row.iv[1];
+          row.open = row.iv[3] + row.iv[4] + row.iv[5];
+          row.sym = symmetryScoreFromSet(row.primeForm, row.iv);
+          db.push(row);
+        });
+      }
+      db.forEach((row) => {
+        row.zMates = db.filter((other) => other.card === row.card && ivKey(other.iv) === ivKey(row.iv) && pfKey(other.primeForm) !== pfKey(row.primeForm)).map((x) => x.forte);
+      });
+      return db;
+    }
+
+    function buildAll4094Rows() {
+      const rows = [];
+      let counter = 1;
+      for (let n = 1; n <= 11; n++) {
+        const all = subsetsOfSize(Array.from({ length: 12 }, (_, i) => i), n);
+        all.forEach((set) => {
+          const normalized = normalOrder(set);
+          const pf = primeForm(set);
+          const iv = intervalVector(set);
+          rows.push({
+            id: counter++,
+            raw: set,
+            iv,
+            normalized,
+            primeForm: pf
+          });
+        });
+      }
+      return rows;
+    }
+
+    function nearestPitchClassFromCents(cents) {
+      const pcNames = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
+      const rounded = Math.round(cents / 100);
+      const pcIndex = mod(rounded, 12);
+      const nearestCents = rounded * 100;
+      const deviation = cents - nearestCents;
+      return {
+        name: pcNames[pcIndex],
+        nearestCents,
+        deviation
+      };
+    }
+
+    function buildHarmonicRows(baseFreq = BASE_HARMONIC_FREQ, count = 100) {
+      return Array.from({ length: count }, (_, idx) => {
+        const n = idx + 1;
+        const frequency = baseFreq * n;
+        const totalCents = 1200 * Math.log2(n);
+        const foldedCents = mod(totalCents, 1200);
+        const nearest = nearestPitchClassFromCents(foldedCents);
+        return {
+          n,
+          frequency,
+          totalCents,
+          foldedCents,
+          nearestName: nearest.name,
+          deviation: nearest.deviation
+        };
+      });
+    }
+
+    function symmetryScoreFromSet(set, iv) {
+      const diff = Math.abs(iv[0]-iv[4]) + Math.abs(iv[1]-iv[3]) + Math.abs((set.length % 2)-0.5);
+      return Math.max(0, Math.min(100, 100 - Math.round(diff * 14)));
+    }
+
+    function pcClockPositions(radius = 120) {
+      return Array.from({ length: 12 }, (_, i) => {
+        const angle = (Math.PI * 2 * i) / 12 - Math.PI / 2;
+        return { pc: i, x: 150 + radius * Math.cos(angle), y: 150 + radius * Math.sin(angle) };
+      });
+    }
+
+    function renderClock(selected) {
+      const svg = document.getElementById('clockSvg'); svg.innerHTML = '';
+      const selectedSet = new Set(selected), pos = pcClockPositions();
+      const ns = 'http://www.w3.org/2000/svg';
+      const ring = document.createElementNS(ns, 'circle');
+      ring.setAttribute('cx',150); ring.setAttribute('cy',150); ring.setAttribute('r',120); ring.setAttribute('fill','none'); ring.setAttribute('stroke','#334155'); ring.setAttribute('stroke-opacity','0.2'); ring.setAttribute('stroke-width','2'); svg.appendChild(ring);
+      pos.forEach((p) => {
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1',150); line.setAttribute('y1',150); line.setAttribute('x2',p.x); line.setAttribute('y2',p.y); line.setAttribute('stroke','#64748b'); line.setAttribute('stroke-opacity','0.15'); svg.appendChild(line);
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx',p.x); circle.setAttribute('cy',p.y); circle.setAttribute('r',selectedSet.has(p.pc)?18:14); circle.setAttribute('fill',selectedSet.has(p.pc)?'#0f172a':'transparent'); circle.setAttribute('fill-opacity',selectedSet.has(p.pc)?'0.95':'0'); circle.setAttribute('stroke','#334155'); circle.setAttribute('stroke-opacity','0.65'); svg.appendChild(circle);
+        const text = document.createElementNS(ns, 'text');
+        text.setAttribute('x',p.x); text.setAttribute('y',p.y+5); text.setAttribute('text-anchor','middle'); text.setAttribute('font-size','14'); text.setAttribute('font-weight','600'); text.setAttribute('fill',selectedSet.has(p.pc)?'white':'#0f172a'); text.textContent = String(p.pc); svg.appendChild(text);
+      });
+    }
+
+    function pitchClassToStaffInfo(pc) {
+      const map = {
+        0:{name:'C',accidental:'',diatonicIndex:0},1:{name:'C',accidental:'♯',diatonicIndex:0},2:{name:'D',accidental:'',diatonicIndex:1},3:{name:'D',accidental:'♯',diatonicIndex:1},4:{name:'E',accidental:'',diatonicIndex:2},5:{name:'F',accidental:'',diatonicIndex:3},6:{name:'F',accidental:'♯',diatonicIndex:3},7:{name:'G',accidental:'',diatonicIndex:4},8:{name:'G',accidental:'♯',diatonicIndex:4},9:{name:'A',accidental:'',diatonicIndex:5},10:{name:'A',accidental:'♯',diatonicIndex:5},11:{name:'B',accidental:'',diatonicIndex:6}
+      };
+      return map[pc];
+    }
+    function midiToStaffY(midi) {
+      const pc = mod(midi, 12), octave = Math.floor(midi / 12) - 1, info = pitchClassToStaffInfo(pc);
+      const c4Y = 170;
+      const staffStepOffset = (octave - 4) * 7 + info.diatonicIndex;
+      return c4Y - staffStepOffset * 10;
+    }
+    function staffLedgerLinesForY(y) {
+      const lines = [];
+      if (y > 150) for (let ledgerY = 170; ledgerY <= y; ledgerY += 20) lines.push(ledgerY);
+      if (y < 70) for (let ledgerY = 50; ledgerY >= y; ledgerY -= 20) lines.push(ledgerY);
+      return lines;
+    }
+    function renderStaffNotation(pcs) {
+      const svg = document.getElementById('staffSvg'); if (!svg) return; svg.innerHTML = '';
+      const ns = 'http://www.w3.org/2000/svg'; const left=90, right=700, lineYs=[70,90,110,130,150];
+      lineYs.forEach((y) => { const line = document.createElementNS(ns,'line'); line.setAttribute('x1',left); line.setAttribute('x2',right); line.setAttribute('y1',y); line.setAttribute('y2',y); line.setAttribute('stroke','#334155'); line.setAttribute('stroke-width','1.5'); svg.appendChild(line); });
+      const clef = document.createElementNS(ns,'text'); clef.setAttribute('x',38); clef.setAttribute('y',132); clef.setAttribute('font-size','64'); clef.setAttribute('fill','#0f172a'); clef.textContent='𝄞'; svg.appendChild(clef);
+      const sorted = [...pcs].sort((a,b)=>a-b);
+      sorted.forEach((pc,index) => {
+        const midi = 60 + pc, info = pitchClassToStaffInfo(pc), y = midiToStaffY(midi), x = 150 + index * 62;
+        const note = document.createElementNS(ns,'ellipse'); note.setAttribute('cx',x); note.setAttribute('cy',y); note.setAttribute('rx',11); note.setAttribute('ry',8); note.setAttribute('transform',`rotate(-20 ${x} ${y})`); note.setAttribute('fill','#0f172a'); svg.appendChild(note);
+        const stem = document.createElementNS(ns,'line'); stem.setAttribute('x1',x+9); stem.setAttribute('x2',x+9); stem.setAttribute('y1',y); stem.setAttribute('y2',y-36); stem.setAttribute('stroke','#0f172a'); stem.setAttribute('stroke-width','1.5'); svg.appendChild(stem);
+        if (info.accidental) { const acc = document.createElementNS(ns,'text'); acc.setAttribute('x',x-24); acc.setAttribute('y',y+5); acc.setAttribute('font-size','22'); acc.textContent=info.accidental; svg.appendChild(acc); }
+        staffLedgerLinesForY(y).forEach((ledgerY) => { const l = document.createElementNS(ns,'line'); l.setAttribute('x1',x-16); l.setAttribute('x2',x+16); l.setAttribute('y1',ledgerY); l.setAttribute('y2',ledgerY); l.setAttribute('stroke','#334155'); l.setAttribute('stroke-width','1.5'); svg.appendChild(l); });
+        const label = document.createElementNS(ns,'text'); label.setAttribute('x',x); label.setAttribute('y',205); label.setAttribute('text-anchor','middle'); label.setAttribute('font-size','12'); label.setAttribute('fill','#475569'); label.textContent=`${NOTE_NAMES[pc]}4`; svg.appendChild(label);
+      });
+    }
+
+    function pcToMidi(pc, baseMidi = 60) { return baseMidi + pc; }
+    function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+    function stopAudio() {
+      if (audioStopTimer) { clearTimeout(audioStopTimer); audioStopTimer = null; }
+      activeOscillators.forEach((node) => {
+        try {
+          node.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+          node.gain.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.08);
+          node.osc.stop(audioCtx.currentTime + 0.2);
+        } catch (e) {}
+      });
+      activeOscillators = [];
+    }
+    async function ensureAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+      return audioCtx;
+    }
+    async function playPitchClassChord() {
+      const pcs = parsePitchClasses(document.getElementById('pcInput').value); if (!pcs.length) return;
+      await ensureAudioContext(); stopAudio(); const now = audioCtx.currentTime;
+      const master = audioCtx.createGain(); master.gain.setValueAtTime(0.0001, now); master.gain.linearRampToValueAtTime(0.18, now + 0.06); master.gain.exponentialRampToValueAtTime(0.12, now + 0.5); master.connect(audioCtx.destination);
+      pcs.forEach((pc, idx) => {
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? 'triangle' : 'sine'; osc.frequency.setValueAtTime(midiToFreq(pcToMidi(pc, 60)), now);
+        gain.gain.setValueAtTime(0.0001, now); gain.gain.linearRampToValueAtTime(0.12 / Math.max(1, pcs.length), now + 0.04); gain.gain.exponentialRampToValueAtTime(0.08 / Math.max(1, pcs.length), now + 0.4);
+        osc.connect(gain); gain.connect(master); osc.start(now); activeOscillators.push({ osc, gain });
+      });
+      audioStopTimer = setTimeout(() => { try { stopAudio(); } catch (e) {} }, 2200);
+    }
+    async function playPitchClassArpeggio() {
+      const pcs = parsePitchClasses(document.getElementById('pcInput').value); if (!pcs.length) return;
+      await ensureAudioContext(); stopAudio(); const now = audioCtx.currentTime, noteDur = 0.42, gap = 0.3;
+      const master = audioCtx.createGain(); master.gain.setValueAtTime(0.16, now); master.connect(audioCtx.destination);
+      pcs.forEach((pc, idx) => {
+        const start = now + idx * gap, end = start + noteDur;
+        const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? 'triangle' : 'sine'; osc.frequency.setValueAtTime(midiToFreq(pcToMidi(pc, 60)), start);
+        gain.gain.setValueAtTime(0.0001, start); gain.gain.linearRampToValueAtTime(0.11, start + 0.03); gain.gain.exponentialRampToValueAtTime(0.05, end - 0.05); gain.gain.exponentialRampToValueAtTime(0.0001, end);
+        osc.connect(gain); gain.connect(master); osc.start(start); osc.stop(end + 0.02); activeOscillators.push({ osc, gain });
+      });
+      const totalMs = Math.ceil((pcs.length * gap + noteDur) * 1000) + 120;
+      audioStopTimer = setTimeout(() => { try { stopAudio(); } catch (e) {} }, totalMs);
+    }
+
+    function classifyHarmonyCharacter(pcs, iv) {
+      const n = pcs.length;
+      const set = new Set(pcs);
+      const has = (...vals) => vals.every((v) => set.has(v));
+      const consecutivePairs = pcs.filter((pc) => set.has(mod(pc + 1, 12))).length;
+      const perfectSupport = iv[4] + iv[3];
+      const chromaticWeight = iv[0] * 2 + iv[1];
+      const tritoneWeight = iv[5];
+      const symmetryRaw = Math.max(0, 100 - (Math.abs(iv[0]-iv[4]) + Math.abs(iv[1]-iv[3])) * 16);
+      const wholeToneHit = ([0,2,4,6,8,10].every((v) => set.has(v)) || pcs.every((pc) => pc % 2 === pcs[0] % 2));
+      const octaA = [0,2,3,5,6,8,9,11].filter((v) => set.has(v)).length;
+      const octaB = [0,1,3,4,6,7,9,10].filter((v) => set.has(v)).length;
+      const pentaTemplates = [[0,2,4,7,9],[0,2,5,7,10],[0,3,5,7,10],[0,2,5,7,9]];
+      const pentaHit = Math.max(...pentaTemplates.map((tpl) => tpl.filter((v) => set.has(v)).length));
+      const modalTemplates = [[0,2,4,5,7,9,11],[0,2,3,5,7,9,10],[0,1,3,5,7,8,10],[0,2,4,6,7,9,11],[0,2,4,5,7,9,10],[0,2,3,5,7,8,10],[0,1,3,5,6,8,10]];
+      const modalHit = Math.max(...modalTemplates.map((tpl) => tpl.filter((v) => set.has(v)).length));
+      const diatonicHit = Math.max([0,2,4,5,7,9,11].filter((v) => set.has(v)).length,[1,3,5,6,8,10,0].filter((v) => set.has(v)).length);
+
+      const scores = {
+        'コンソナント': Math.max(0, Math.min(100, Math.round((perfectSupport * 22 + iv[2] * 10 - chromaticWeight * 8) / Math.max(1, n)))),
+        'トーナル': Math.max(0, Math.min(100, Math.round(((has(0,4,7) ? 55 : 0) + (has(0,7) ? 20 : 0) + perfectSupport * 8 - iv[0] * 10) / Math.max(1, n/3)))) ,
+        'モーダル': Math.max(0, Math.min(100, Math.round(modalHit * 13 - iv[5] * 4))),
+        'ペンタトニック': Math.max(0, Math.min(100, Math.round(pentaHit * 18 - iv[0] * 8))),
+        'ドミナント': Math.max(0, Math.min(100, Math.round(((has(0,4,7,10) ? 75 : 0) + (has(4,10) ? 15 : 0) + iv[5] * 6) / Math.max(1, n/4)))) ,
+        'クロマティック': Math.max(0, Math.min(100, Math.round((chromaticWeight * 18 + consecutivePairs * 8) / Math.max(1, n)))),
+        'クラスター': Math.max(0, Math.min(100, Math.round((iv[0] * 28 + iv[1] * 10 + consecutivePairs * 12) / Math.max(1, n)))),
+        'トライトーン': Math.max(0, Math.min(100, Math.round((tritoneWeight * 34 + (has(0,6) ? 20 : 0)) / Math.max(1, n/2)))),
+        '対称': Math.max(0, Math.min(100, Math.round(symmetryRaw))),
+        'ホールトーン': wholeToneHit ? 100 : Math.max(0, Math.min(100, Math.round((pcs.filter((pc) => pc % 2 === pcs[0] % 2).length * 16) - iv[0] * 10))),
+        'オクタトニック': Math.max(0, Math.min(100, Math.round(Math.max(octaA, octaB) * 12 - iv[4] * 3))),
+        '全音階的': Math.max(0, Math.min(100, Math.round(diatonicHit * 13 - iv[0] * 6 - iv[5] * 2)))
+      };
+
+      const ranked = Object.entries(scores).sort((a,b) => b[1] - a[1]);
+      return { scores, top: ranked[0]?.[0] || '—', secondary: ranked[1]?.[0] || '—', ranked };
+    }
+
+    function analyzePitchBrightness(pcs) {
+      const brightnessProfile = {
+        0: 54,
+        1: 22,
+        2: 66,
+        3: 30,
+        4: 78,
+        5: 48,
+        6: 18,
+        7: 72,
+        8: 28,
+        9: 84,
+        10: 36,
+        11: 60
+      };
+      const labels = {
+        0: 'C', 1: 'C♯/D♭', 2: 'D', 3: 'D♯/E♭', 4: 'E', 5: 'F',
+        6: 'F♯/G♭', 7: 'G', 8: 'G♯/A♭', 9: 'A', 10: 'A♯/B♭', 11: 'B'
+      };
+      const rows = pcs.map((pc) => {
+        const value = brightnessProfile[pc] ?? 50;
+        return {
+          pc,
+          label: labels[pc],
+          brightness: value,
+          darkness: 100 - value,
+          quality: value >= 70 ? 'かなり明るい' : value >= 58 ? 'やや明るい' : value >= 42 ? '中庸' : value >= 28 ? 'やや暗い' : 'かなり暗い'
+        };
+      }).sort((a, b) => b.brightness - a.brightness);
+      const avg = rows.length ? Math.round(rows.reduce((acc, row) => acc + row.brightness, 0) / rows.length) : 0;
+      return {
+        rows,
+        average: avg,
+        summary: avg >= 68 ? '全体として明るめ' : avg >= 56 ? 'やや明るめ' : avg >= 44 ? '中間的' : avg >= 32 ? 'やや暗め' : '全体として暗め'
+      };
+    }
+
+    function zRelationMatchesByPF(pf) {
+      const row = currentDB.find((r) => pfKey(r.primeForm) === pfKey(pf));
+      if (!row) return [];
+      return currentDB.filter((r) => r.card === row.card && ivKey(r.iv) === ivKey(row.iv) && pfKey(r.primeForm) !== pfKey(pf));
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function intervalColorEngine(iv, pcs = []) {
+      const [ic1, ic2, ic3, ic4, ic5, ic6] = iv;
+      const totalPairs = Math.max(1, iv.reduce((a, b) => a + b, 0));
+      const darkness = (ic1 * 1.25 + ic6 * 0.55 + ic2 * 0.45) / totalPairs;
+      const brightness = (ic4 * 1.2 + ic3 * 0.55 + ic5 * 0.35) / totalPairs;
+      const purity = (ic5 * 1.2 + ic4 * 0.45 - ic1 * 0.35) / totalPairs;
+      const exoticness = (ic6 * 1.15 + ic2 * 0.5 + ic3 * 0.2) / totalPairs;
+      const warmth = (ic3 * 1.0 + ic4 * 0.45 - ic6 * 0.25) / totalPairs;
+      const hueBase = 210 + ic3 * 8 + ic4 * 16 + ic6 * 22 - ic1 * 18 - ic2 * 6;
+      const hue = ((hueBase % 360) + 360) % 360;
+      const saturation = clamp(28 + purity * 42 + exoticness * 18, 18, 92);
+      const lightness = clamp(52 + brightness * 24 - darkness * 26, 16, 84);
+      const pcBrightnessProfile = {0:54,1:22,2:66,3:30,4:78,5:48,6:18,7:72,8:28,9:84,10:36,11:60};
+      const avgPcBrightness = pcs.length ? pcs.reduce((sum, pc) => sum + (pcBrightnessProfile[pc] ?? 50), 0) / pcs.length : 50;
+      const adjustedLightness = clamp(lightness + (avgPcBrightness - 50) * 0.18, 12, 88);
+      return {
+        h: Math.round(hue),
+        s: Math.round(saturation),
+        l: Math.round(adjustedLightness),
+        css: `hsl(${Math.round(hue)} ${Math.round(saturation)}% ${Math.round(adjustedLightness)}%)`,
+        metrics: {
+          darkness: Math.round(clamp(darkness * 100, 0, 100)),
+          brightness: Math.round(clamp(brightness * 100, 0, 100)),
+          purity: Math.round(clamp(purity * 100, 0, 100)),
+          exoticness: Math.round(clamp(exoticness * 100, 0, 100)),
+          warmth: Math.round(clamp(warmth * 100, 0, 100))
+        }
+      };
+    }
+
+    function buildVoicingFromPCs(pcs, baseMidi = 60) {
+      const sorted = [...pcs].sort((a, b) => a - b);
+      let lastMidi = null;
+      return sorted.map((pc, index) => {
+        let midi = baseMidi + pc;
+        if (lastMidi !== null) {
+          while (midi <= lastMidi) midi += 12;
+        }
+        if (index === 0 && midi > 55) midi -= 12;
+        if (lastMidi !== null && midi <= lastMidi) midi += 12;
+        lastMidi = midi;
+        return { pc, midi, freq: midiToFreq(midi), amp: 1 };
+      });
+    }
+
+    function harmonicProfileEngine(notes, options = {}) {
+      const harmonicCount = options.harmonicCount ?? 12;
+      const decay = options.decayExponent ?? 1.25;
+      const partials = [];
+      notes.forEach((note, noteIndex) => {
+        for (let n = 1; n <= harmonicCount; n++) {
+          partials.push({
+            freq: note.freq * n,
+            amp: (note.amp ?? 1) / Math.pow(n, decay),
+            order: n,
+            noteIndex
+          });
+        }
+      });
+      if (!partials.length) {
+        return {
+          purity: 0, brilliance: 0, roughness: 0, spread: 0, fusion: 0, thickness: 0,
+          centroidHz: 0, registerHeight: 0, partials: []
+        };
+      }
+      const totalEnergy = partials.reduce((sum, p) => sum + p.amp, 0);
+      const lowEnergy = partials.filter((p) => p.order <= 6).reduce((sum, p) => sum + p.amp, 0);
+      const highEnergy = partials.filter((p) => p.order >= 8).reduce((sum, p) => sum + p.amp, 0);
+      const centroidHz = partials.reduce((sum, p) => sum + p.freq * p.amp, 0) / Math.max(1e-9, totalEnergy);
+      const meanLog = partials.reduce((sum, p) => sum + Math.log2(p.freq) * p.amp, 0) / Math.max(1e-9, totalEnergy);
+      const varLog = partials.reduce((sum, p) => {
+        const d = Math.log2(p.freq) - meanLog;
+        return sum + d * d * p.amp;
+      }, 0) / Math.max(1e-9, totalEnergy);
+      const spread = clamp(Math.sqrt(varLog) / 2.4, 0, 1);
+
+      let roughnessAccum = 0;
+      let roughnessNorm = 0;
+      let fusionHits = 0;
+      let fusionNorm = 0;
+      for (let i = 0; i < partials.length; i++) {
+        for (let j = i + 1; j < partials.length; j++) {
+          const a = partials[i];
+          const b = partials[j];
+          const weight = a.amp * b.amp;
+          const diffHz = Math.abs(a.freq - b.freq);
+          const minFreq = Math.max(40, Math.min(a.freq, b.freq));
+          const diffRatio = diffHz / minFreq;
+          const roughWindow = 0.035;
+          const closeness = Math.max(0, 1 - diffRatio / roughWindow);
+          roughnessAccum += weight * closeness;
+          roughnessNorm += weight;
+
+          const cents = 1200 * Math.abs(Math.log2(a.freq / b.freq));
+          const nearestSemitone = Math.round(cents / 100) * 100;
+          const semitoneError = Math.abs(cents - nearestSemitone);
+          const integerish = (a.order % b.order === 0 || b.order % a.order === 0) ? 1 : 0;
+          const fusionScore = Math.max(0, 1 - semitoneError / 18) * 0.55 + integerish * 0.45;
+          fusionHits += weight * fusionScore;
+          fusionNorm += weight;
+        }
+      }
+
+      const purity = clamp(lowEnergy / Math.max(1e-9, totalEnergy), 0, 1);
+      const brilliance = clamp(highEnergy / Math.max(1e-9, totalEnergy), 0, 1);
+      const roughness = clamp(roughnessAccum / Math.max(1e-9, roughnessNorm), 0, 1);
+      const fusion = clamp(fusionHits / Math.max(1e-9, fusionNorm), 0, 1);
+      const bassEnergy = partials.filter((p) => p.freq < 300).reduce((sum, p) => sum + p.amp, 0) / Math.max(1e-9, totalEnergy);
+      const thickness = clamp(bassEnergy * 0.75 + purity * 0.25, 0, 1);
+      const avgMidi = notes.length ? notes.reduce((sum, n) => sum + n.midi, 0) / notes.length : 60;
+      const registerHeight = clamp((avgMidi - 48) / 36, 0, 1);
+
+      return {
+        purity,
+        brilliance,
+        roughness,
+        spread,
+        fusion,
+        thickness,
+        centroidHz,
+        registerHeight,
+        partials
+      };
+    }
+
+    function mergeHarmonyEngines(structureColor, harmonic, pcs = []) {
+      const h = Math.round((structureColor.h + harmonic.brilliance * 10 - harmonic.roughness * 6 + harmonic.fusion * 4 + 360) % 360);
+      const s = Math.round(clamp(structureColor.s + harmonic.purity * 18 + harmonic.fusion * 10 - harmonic.roughness * 24, 8, 96));
+      const l = Math.round(clamp(structureColor.l + harmonic.brilliance * 18 + harmonic.registerHeight * 8 - harmonic.thickness * 10 - harmonic.roughness * 12, 8, 94));
+      const transparency = Math.round(clamp(harmonic.fusion * 45 + harmonic.purity * 30 + harmonic.spread * 12 - harmonic.roughness * 38, 0, 100));
+      const shimmer = Math.round(clamp(harmonic.brilliance * 60 + harmonic.spread * 20 + harmonic.fusion * 10, 0, 100));
+      const cloudiness = Math.round(clamp(harmonic.roughness * 65 + (1 - harmonic.fusion) * 20 + (1 - harmonic.purity) * 15, 0, 100));
+      return {
+        h, s, l,
+        css: `hsl(${h} ${s}% ${l}%)`,
+        transparency,
+        shimmer,
+        cloudiness,
+        harmonicMetrics: {
+          purity: Math.round(harmonic.purity * 100),
+          brilliance: Math.round(harmonic.brilliance * 100),
+          roughness: Math.round(harmonic.roughness * 100),
+          spread: Math.round(harmonic.spread * 100),
+          fusion: Math.round(harmonic.fusion * 100),
+          thickness: Math.round(harmonic.thickness * 100)
+        }
+      };
+    }
+
+    function describeHarmonicCharacter(finalColor, harmonic) {
+      const words = [];
+      if (harmonic.purity >= 0.62) words.push('純度が高い');
+      else if (harmonic.purity <= 0.4) words.push('倍音が拡散気味');
+      if (harmonic.brilliance >= 0.32) words.push('きらめきが強い');
+      else words.push('高域は穏やか');
+      if (harmonic.roughness >= 0.3) words.push('やや濁りがある');
+      else words.push('比較的なめらか');
+      if (harmonic.thickness >= 0.58) words.push('厚みがある');
+      if (finalColor.transparency >= 60) words.push('透明感が高い');
+      else if (finalColor.cloudiness >= 58) words.push('灰色化している');
+      return words.join(' ・ ');
+    }
+
+    function renderHarmonyColorPanel(iv, pcs = []) {
+      const swatch = document.getElementById('harmonyColorSwatch');
+      const summary = document.getElementById('harmonyColorSummary');
+      const meta = document.getElementById('harmonyColorMeta');
+      const bars = document.getElementById('harmonyColorBars');
+      const harmonicGrid = document.getElementById('harmonicProfileGrid');
+      if (!swatch || !summary || !meta || !bars || !harmonicGrid) return;
+
+      const structureColor = intervalColorEngine(iv, pcs);
+      const notes = buildVoicingFromPCs(pcs);
+      const harmonic = harmonicProfileEngine(notes);
+      const finalColor = mergeHarmonyEngines(structureColor, harmonic, pcs);
+      const labelText = describeHarmonicCharacter(finalColor, harmonic);
+
+      swatch.style.background = `linear-gradient(135deg,
+        hsl(${finalColor.h} ${finalColor.s}% ${clamp(finalColor.l + 12, 0, 100)}%),
+        hsl(${(finalColor.h + 20) % 360} ${clamp(finalColor.s - 6, 0, 100)}% ${clamp(finalColor.l - 8, 0, 100)}%))`;
+
+      summary.innerHTML = `構造色 <strong>IV</strong> と、C4基準配置から生成した <strong>倍音プロファイル</strong> を合成。${labelText}。`;
+      meta.innerHTML = `
+        <div class="color-meta-item"><div class="color-meta-name">Final H</div><div class="color-meta-value">${finalColor.h}</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">Final S</div><div class="color-meta-value">${finalColor.s}%</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">Final L</div><div class="color-meta-value">${finalColor.l}%</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">Base IV Color</div><div class="color-meta-value mono">hsl(${structureColor.h} ${structureColor.s}% ${structureColor.l}%)</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">透明感</div><div class="color-meta-value">${finalColor.transparency}</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">きらめき</div><div class="color-meta-value">${finalColor.shimmer}</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">にごり</div><div class="color-meta-value">${finalColor.cloudiness}</div></div>
+        <div class="color-meta-item"><div class="color-meta-name">spectral centroid</div><div class="color-meta-value">${harmonic.centroidHz.toFixed(1)} Hz</div></div>`;
+
+      const metricLabels = [
+        ['darkness','構造暗さ', structureColor.metrics.darkness],
+        ['brightness','構造明るさ', structureColor.metrics.brightness],
+        ['purity','倍音純度', finalColor.harmonicMetrics.purity],
+        ['brilliance','倍音きらめき', finalColor.harmonicMetrics.brilliance],
+        ['roughness','倍音にごり', finalColor.harmonicMetrics.roughness],
+        ['fusion','融合度', finalColor.harmonicMetrics.fusion],
+        ['thickness','厚み', finalColor.harmonicMetrics.thickness]
+      ];
+      bars.innerHTML = metricLabels.map(([, label, value]) => `
+        <div class="color-bar-row">
+          <strong>${label}</strong>
+          <div class="color-bar-track"><div class="color-bar-fill" style="width:${value}%"></div></div>
+          <span>${value}</span>
+        </div>`).join('');
+
+      const harmonicCards = [
+        ['purity', finalColor.harmonicMetrics.purity, '低次倍音中心。高いほど純度・安定・濃さが増します。'],
+        ['brilliance', finalColor.harmonicMetrics.brilliance, '高次倍音量。高いほど明るく硬質で光ります。'],
+        ['roughness', finalColor.harmonicMetrics.roughness, '近接干渉。高いほどざらつきと濁りが増えます。'],
+        ['spread', finalColor.harmonicMetrics.spread, 'スペクトルの広がり。高いほど空間的で拡散します。'],
+        ['fusion', finalColor.harmonicMetrics.fusion, '倍音の重なりやすさ。一体感と透明感に関与します。'],
+        ['thickness', finalColor.harmonicMetrics.thickness, '低域エネルギーと純度から見た厚みです。']
+      ];
+      harmonicGrid.innerHTML = harmonicCards.map(([name, value, desc]) => `
+        <div class="spectral-item">
+          <div class="spectral-name">${name}</div>
+          <div class="spectral-meta">${desc}</div>
+          <div class="spectral-track"><div class="spectral-fill" style="width:${value}%"></div></div>
+          <div class="spectral-meta">${value} / 100</div>
+        </div>`).join('');
+    }
+
+    function renderKeyboard(selected) {
+      const el = document.getElementById('pcKeyboard');
+      el.innerHTML = NOTE_NAMES.map((n, pc) => `<div class="key ${selected.includes(pc) ? 'active' : ''}" data-pc="${pc}">${n}<br><span class="tiny">${pc}</span></div>`).join('');
+      el.querySelectorAll('.key').forEach((key) => key.addEventListener('click', () => {
+        const pc = Number(key.dataset.pc);
+        const pcs = parsePitchClasses(document.getElementById('pcInput').value);
+        const set = new Set(pcs);
+        if (set.has(pc)) set.delete(pc); else set.add(pc);
+        document.getElementById('pcInput').value = [...set].sort((a,b)=>a-b).join(' ');
+        renderApp();
+      }));
+    }
+
+    function renderRotationList(pcs, normalOrderResult) {
+      const el = document.getElementById('rotationList');
+      if (!el) return;
+      const rotations = allRotationsBeforeNormalOrder(pcs);
+      if (!rotations.length) {
+        el.innerHTML = '<div class="tiny">pitch class を入力すると、ここに全回転が表示されます。</div>';
+        return;
+      }
+      el.innerHTML = rotations.map((rot) => {
+        const isActive = pfKey(rot.normalized) === pfKey(normalOrderResult);
+        return `<div class="rotation-item ${isActive ? 'active' : ''}">
+          <div class="rotation-head">
+            <span>Rotation ${rot.index}</span>
+            <span>span ${rot.span}</span>
+          </div>
+          <div class="rotation-body">
+            raw <span class="rotation-code">(${rot.raw.join(',')})</span><br>
+            normalized <span class="rotation-code">(${rot.normalized.join(',')})</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderDBTable(activePF) {
+      const q = document.getElementById('forteSearch').value.trim().toLowerCase();
+      const body = document.getElementById('dbTableBody');
+      const rows = currentDB.filter((row) => {
+        if (!q) return true;
+        const blob = [row.forte, formatPrime(row.primeForm), row.card, row.iv.join(' '), row.zMates.join(' ')].join(' ').toLowerCase();
+        return blob.includes(q);
+      });
+      body.innerHTML = rows.map((row) => `
+        <tr class="${pfKey(row.primeForm) === pfKey(activePF) ? 'active-row' : ''}" data-forte="${row.forte}">
+          <td>${row.forte}</td>
+          <td class="mono">${formatPrime(row.primeForm)}</td>
+          <td>${row.card}</td>
+          <td class="mono">&lt;${row.iv.join('')} &gt;</td>
+          <td>${row.zMates.join(', ') || '—'}</td>
+        </tr>
+      `).join('');
+      body.querySelectorAll('tr').forEach((tr) => tr.addEventListener('click', () => {
+        const forte = tr.dataset.forte;
+        const row = currentDB.find((r) => r.forte === forte);
+        if (row) {
+          document.getElementById('pcInput').value = row.primeForm.join(' ');
+          renderApp();
+        }
+      }));
+    }
+
+    function transposeSet(set, t) {
+      return set.map((x) => mod(x + t, 12)).sort((a, b) => a - b);
+    }
+
+    function ivDistance(ivA, ivB) {
+      return ivA.reduce((acc, v, i) => acc + Math.abs(v - ivB[i]), 0);
+    }
+
+    function pcStepDistance(a, b) {
+      const d = Math.abs(a - b);
+      return Math.min(d, 12 - d);
+    }
+
+    function voiceLeadingDistanceApprox(setA, setB) {
+      const a = [...setA].sort((x, y) => x - y);
+      const bBase = [...setB].sort((x, y) => x - y);
+      const shared = Math.min(a.length, bBase.length);
+      const penalty = Math.abs(a.length - bBase.length) * 6;
+      let best = Infinity;
+      for (let t = 0; t < 12; t++) {
+        const b = transposeSet(bBase, t);
+        let sum = 0;
+        for (let i = 0; i < shared; i++) {
+          sum += pcStepDistance(a[i], b[i]);
+        }
+        if (sum < best) best = sum;
+      }
+      return best + penalty;
+    }
+
+    function renderDistancePanel(pf, iv) {
+      const el = document.getElementById('distanceList');
+      const modeEl = document.getElementById('distanceMode');
+      if (!el || !modeEl) return;
+      const current = currentDB.find((r) => pfKey(r.primeForm) === pfKey(pf));
+      if (!current) {
+        el.innerHTML = '<div class="tiny">一致する set class がありません。</div>';
+        return;
+      }
+      const mode = modeEl.value;
+      const ranked = currentDB
+        .filter((r) => r.forte !== current.forte)
+        .map((r) => {
+          const ivd = ivDistance(current.iv, r.iv);
+          const vld = voiceLeadingDistanceApprox(current.primeForm, r.primeForm);
+          const hybrid = ivd * 1.5 + vld;
+          return { ...r, ivd, vld, hybrid, score: mode === 'iv' ? ivd : mode === 'vl' ? vld : hybrid };
+        })
+        .sort((a, b) => a.score - b.score || a.card - b.card || lexicographicCompare(a.primeForm, b.primeForm))
+        .slice(0, 8);
+
+      el.innerHTML = ranked.map((r, idx) => `
+        <div class="distance-item">
+          <div><strong>${idx + 1}. ${r.forte}</strong> <span class="mono">${formatPrime(r.primeForm)}</span></div>
+          <div class="distance-meta">IV &lt;${r.iv.join('')}&gt; ｜ IV差分 ${r.ivd} ｜ voice-leading近似 ${r.vld.toFixed(1)} ｜ score ${r.score.toFixed(1)}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderAtlasNeighbors(pf, iv) {
+      const atlas = document.getElementById('atlasGrid');
+      const row = currentDB.find((r) => pfKey(r.primeForm) === pfKey(pf));
+      if (!row) { atlas.innerHTML = '<div class="tiny">一致する set class がありません。</div>'; return; }
+      const neighbors = currentDB
+        .filter((r) => r.forte !== row.forte)
+        .map((r) => ({ ...r, dist: r.iv.reduce((acc, v, i) => acc + Math.abs(v - row.iv[i]), 0) + Math.abs(r.card - row.card) }))
+        .sort((a,b) => a.dist - b.dist)
+        .slice(0, 8);
+      atlas.innerHTML = [`<div class="atlas-cell"><strong>Current</strong><div>${row.forte}</div><div class="mono">${formatPrime(row.primeForm)}</div></div>`]
+        .concat(neighbors.map((n) => `<div class="atlas-cell"><strong>${n.forte}</strong><div class="mono">${formatPrime(n.primeForm)}</div><div>IV &lt;${n.iv.join('')}&gt;</div></div>`)).join('');
+    }
+
+    async function initMIDI() {
+      if (!navigator.requestMIDIAccess) {
+        document.getElementById('midiStatus').textContent = 'MIDI: 非対応ブラウザ';
+        return;
+      }
+      try {
+        midiAccess = await navigator.requestMIDIAccess();
+        const inputs = [...midiAccess.inputs.values()];
+        document.getElementById('midiStatus').textContent = inputs.length ? `MIDI: ${inputs.length}入力` : 'MIDI: 接続待ち';
+        inputs.forEach((input) => {
+          input.onmidimessage = (event) => {
+            const [status, note, velocity] = event.data;
+            const command = status & 0xf0;
+            if (command === 0x90 && velocity > 0) {
+              const pc = mod(note, 12);
+              const pcs = parsePitchClasses(document.getElementById('pcInput').value);
+              const set = new Set(pcs); set.add(pc);
+              document.getElementById('pcInput').value = [...set].sort((a,b)=>a-b).join(' ');
+              renderApp();
+            }
+          };
+        });
+      } catch (e) {
+        document.getElementById('midiStatus').textContent = 'MIDI: 接続失敗';
+      }
+    }
+
+    function renderApp() {
+      const pcs = parsePitchClasses(document.getElementById('pcInput').value);
+      const pf = primeForm(pcs), iv = intervalVector(pcs), no = normalOrder(pcs), comp = complement(pcs);
+      
+      const row = currentDB.find((r) => pfKey(r.primeForm) === pfKey(pf));
+      const zMates = zRelationMatchesByPF(pf);
+      const charResult = classifyHarmonyCharacter(pcs, iv);
+      const brightnessResult = analyzePitchBrightness(pcs);
+      const info = [
+        ['入力集合', formatSet(pcs)],
+        ['Cardinality', String(pcs.length)],
+        ['Normal order', formatPrime(no)],
+        ['Prime form', formatPrime(pf)],
+        ['Interval vector', `<${iv.join('')}>`],
+        ['Forteラベル', row ? row.forte : '—'],
+        ['Complement', formatSet(comp)],
+        ['Z-mates', zMates.map((z) => z.forte).join(', ') || '—'],
+        ['主要キャラクター', `${charResult.top} / ${charResult.secondary}`],
+        ['平均明度', `${brightnessResult.average} / 100`]
+      ];
+      document.getElementById('infoList').innerHTML = info.map(([k,v]) => `<div class="info-item"><strong>${k}:</strong> <span>${v}</span></div>`).join('');
+      renderClock(pcs); renderStaffNotation(pcs); renderKeyboard(pcs); renderRotationList(pcs, no);
+
+      const tension = iv[0] * 2 + iv[1] * 1.5 + iv[5] * 1.2;
+      const consonant = iv[2] * 1.2 + iv[3] * 1.6 + iv[4] * 1.1;
+      const symmetry = symmetryScoreFromSet(pf, iv);
+      const roughnessScore = Math.min(100, Math.round((tension / Math.max(1, pcs.length)) * 18));
+      const opennessScore = Math.min(100, Math.round((consonant / Math.max(1, pcs.length)) * 20));
+      const metrics = [['緊張 / roughness', roughnessScore], ['開放 / openness', opennessScore], ['対称 / symmetry', symmetry]];
+      document.getElementById('metrics').innerHTML = metrics.map(([label,value]) => `<div class="metric"><div class="metric-head"><span>${label}</span><strong>${value}</strong></div><div class="track"><div class="fill" style="width:${value}%"></div></div></div>`).join('');
+      document.getElementById('ivHeroText').textContent = `<${iv.join('')}>`;
+      const ivLabels = ['m2nd', 'M2nd', 'm3rd', 'M3rd', '4th', 'tri'];
+      document.getElementById('ivBadges').innerHTML = iv.map((v,i) => `<span class="badge">${ivLabels[i]}: ${v}</span>`).join('');
+      const maxV = Math.max(1, ...iv);
+      document.getElementById('bars').innerHTML = iv.map((v,i) => `<div class="bar-row"><strong>${ivLabels[i]}</strong><div class="bar-track"><div class="bar-fill" style="width:${(v/maxV)*100}%"></div></div><span>${v}</span></div>`).join('');
+      document.getElementById('characterSummary').innerHTML = `最有力: <strong>${charResult.top}</strong> ／ 第2候補: <strong>${charResult.secondary}</strong>`;
+      document.getElementById('brightnessSummary').innerHTML = `平均明度: <strong>${brightnessResult.average}</strong> ／ ${brightnessResult.summary}`;
+      document.getElementById('characterGrid').innerHTML = charResult.ranked.map(([name, score], index) => `<div class="char-pill ${index < 2 ? 'active' : ''}"><div class="char-name">${name}</div><div class="char-score">score: ${score}</div></div>`).join('');
+      document.getElementById('brightnessGrid').innerHTML = brightnessResult.rows.length
+        ? brightnessResult.rows.map((row) => `<div class="brightness-pill"><div class="brightness-head"><span>${row.label} / pc ${row.pc}</span><span>${row.brightness}</span></div><div class="brightness-meta">${row.quality} ・ 暗さ ${row.darkness}</div><div class="brightness-track"><div class="brightness-fill" style="width:${row.brightness}%"></div></div></div>`).join('')
+        : '<div class="tiny">pitch class を入力すると明るさ / 暗さを表示します。</div>';
+      const zListEl = document.getElementById('zList');
+      if (zListEl) {
+        zListEl.innerHTML = zMates.length
+          ? zMates.map((z) => `<div class="zitem"><strong>${z.forte}</strong><div class="mono">${formatPrime(z.primeForm)}</div><div>IV &lt;${z.iv.join('')}&gt;</div></div>`).join('')
+          : '<div class="tiny">Z-relation は見つかりません。</div>';
+      }
+      renderDBTable(pf);
+      renderHarmonyColorPanel(iv, pcs);      
+    }
+
+    document.getElementById('analyzeBtn').addEventListener('click', renderApp);
+    document.getElementById('playChordBtn').addEventListener('click', async () => { await playPitchClassChord(); });
+    document.getElementById('playArpeggioBtn').addEventListener('click', async () => { await playPitchClassArpeggio(); });
+    document.getElementById('stopAudioBtn').addEventListener('click', () => { if (audioCtx) stopAudio(); });
+    document.getElementById('clearBtn').addEventListener('click', () => { document.getElementById('pcInput').value = ''; if (audioCtx) stopAudio(); renderApp(); });
+    document.getElementById('resetBtn').addEventListener('click', () => { document.getElementById('pcInput').value = '0 1 4 7'; if (audioCtx) stopAudio(); renderApp(); });
+    document.querySelectorAll('[data-preset]').forEach((btn) => btn.addEventListener('click', () => { document.getElementById('pcInput').value = btn.getAttribute('data-preset'); renderApp(); }));
+    document.getElementById('pcInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') renderApp(); });
+    document.getElementById('forteSearch').addEventListener('input', () => renderApp());
+    
+
+    currentDB = buildForteDatabase();
+    all4094Rows = buildAll4094Rows();
+
+    function renderAll4094Table() {
+      const el = document.getElementById('allSetsTableBody');
+      if (!el) return;
+
+      let rows = [...all4094Rows];
+
+      if (currentSort.key) {
+        rows.sort((a, b) => {
+          const key = currentSort.key;
+          let va = a[key];
+          let vb = b[key];
+
+          if (Array.isArray(va)) va = va.join(',');
+          if (Array.isArray(vb)) vb = vb.join(',');
+
+          if (va < vb) return currentSort.dir === 'asc' ? -1 : 1;
+          if (va > vb) return currentSort.dir === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
+      el.innerHTML = rows.map((row) => `
+        <tr>
+          <td>${row.id}</td>
+          <td class="mono">(${row.raw.join(',')})</td>
+          <td class="mono">&lt;${row.iv.join('')}&gt;</td>
+          <td class="mono">(${row.normalized.join(',')})</td>
+          <td class="mono">${formatPrime(row.primeForm)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderHarmonicTable(baseFreq = BASE_HARMONIC_FREQ) {
+      const el = document.getElementById('harmonicTableBody');
+      if (!el) return;
+      const rows = buildHarmonicRows(baseFreq, 100);
+      el.innerHTML = rows.map((row) => {
+        const deviationText = `${row.deviation >= 0 ? '+' : ''}${row.deviation.toFixed(2)} cents`;
+        return `
+          <tr>
+            <td>${row.n}</td>
+            <td>${row.frequency.toFixed(2)}</td>
+            <td>${row.totalCents.toFixed(2)}</td>
+            <td>${row.foldedCents.toFixed(2)}</td>
+            <td>${row.nearestName}</td>
+            <td>${deviationText}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function setSort(key, dir) {
+      currentSort = { key, dir };
+      renderAll4094Table();
+    }
+
+    function resetAllSetsSort() {
+      currentSort = { key: null, dir: null };
+      renderAll4094Table();
+    }
+
+    initMIDI();
+    renderAll4094Table();
+    renderHarmonicTable();
+    renderApp();
+  </script>
+</body>
+</html>
